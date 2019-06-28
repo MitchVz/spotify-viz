@@ -5,9 +5,30 @@ import { getRandomElement } from './util/array'
 import * as d3 from 'd3'
 
 export default class Template extends Visualizer {
+
+
+
   constructor () {
     super({ volumeSmoothing: 20 })
-    this.theme = ['#D63230', '#F39237', '#40BCD8', '#39A9DB', '#1C77C3'] // pride template
+
+    this.allThemes = [
+      // pride template
+      ['#D63230', '#F39237', '#40BCD8', '#39A9DB', '#1C77C3'],
+
+      // Deep colors
+      ['#910024', '#8c1a7b', '#041f99', '#0d8dad', '#c17a5e'],
+
+      // blues and purples
+      ['#f7f4ea', '#ded9e2', '#c0b9dd', '#75c9c8', '#8980f5'],
+
+      // bright colors
+      ['#1be7ff', '#6eeb83', '#ffb800', '#e5f900', '#ff5714'],
+
+      // justworks colors
+      ['#39B6E9', '#37B375', '#645187', '#EC5453', '#FBFDBF']
+    ]
+    this.themeIndex = 0
+    this.theme = this.allThemes[this.themeIndex]
     this.timbreArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     this.pitchArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
@@ -130,6 +151,12 @@ export default class Template extends Visualizer {
         console.log("fullscreen")
         this.openFullscreen()
         break
+      case 37:
+        this.changeTheme(-1)
+        break
+      case 39:
+        this.changeTheme(1)
+        break
       default:
         break
     }
@@ -160,5 +187,17 @@ export default class Template extends Visualizer {
     } else if (document.msExitFullscreen) { /* IE/Edge */
       document.msExitFullscreen();
     }
+  }
+
+  changeTheme(value) {
+    this.themeIndex += value
+    if (this.themeIndex < 0) {
+      this.themeIndex = this.allThemes.length - 1
+    } else if (this.themeIndex > this.allThemes.length - 1) {
+      this.themeIndex = 0
+    }
+
+    console.log(`new theme: ${this.themeIndex}`)
+    this.theme = this.allThemes[this.themeIndex]
   }
 }
