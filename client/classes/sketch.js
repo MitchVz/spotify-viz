@@ -1,5 +1,5 @@
 /**
- * @class Sketch - a simple 2d <canvas> animation interface. 
+ * @class Sketch - a simple 2d <canvas> animation interface.
  */
 export default class Sketch {
   constructor ({
@@ -21,6 +21,7 @@ export default class Sketch {
     })
 
     if (main !== null) {
+      console.log(this.ctx)
       this.add('main', main)
     }
   }
@@ -33,17 +34,17 @@ export default class Sketch {
     this.canvas.height = this.height * dpi
     this.canvas.style.transformOrigin = 'top left'
     this.canvas.style.transform = `scale(${1/dpi})`
-    this.ctx.scale(dpi, dpi) 
+    this.ctx.scale(dpi, dpi)
   }
-  
+
   /**
    * @method add – Add an item to the animation queue.
-   * 
+   *
    * NOTE: If duration is specified, the item will remove itself from the queue upon completion.
-   * 
-   * @param {string} name 
-   * @param {function} method 
-   * @param {number} duration 
+   *
+   * @param {string} name
+   * @param {function} method
+   * @param {number} duration
    */
   add (name, method, duration = null) {
     this.queue.push({
@@ -56,7 +57,7 @@ export default class Sketch {
 
   /**
    * @method remove - Remove an item from the animation queue by name.
-   * @param {string} name 
+   * @param {string} name
    */
   remove (name) {
     this.queue = this.queue.filter(item => item.name !== name)
@@ -82,8 +83,8 @@ export default class Sketch {
 
   /**
    * @method paint - Paint a single item in the animation queue.
-   * @param {DOMHighResTimeStamp} now  
-   * @param {object} - Item in the animation queue. 
+   * @param {DOMHighResTimeStamp} now
+   * @param {object} - Item in the animation queue.
    */
   paint (now, { name, start, duration, method }) {
     const elapsed = now - start
@@ -108,7 +109,7 @@ export default class Sketch {
     }
   }
 
-  loop (now) { 
+  loop (now) {
     if (this.active === true) {
       requestAnimationFrame(this.loop.bind(this))
     }

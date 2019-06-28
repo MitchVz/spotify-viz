@@ -21,7 +21,7 @@ export default class Example extends Visualizer {
     const beat = interpolateBasis([0, this.sync.volume * 300, 0])(this.sync.beat.progress)
     ctx.fillStyle = 'rgba(0, 0, 0, .08)'
     ctx.fillRect(0, 0, width, height)
-    ctx.lineWidth = bar 
+    ctx.lineWidth = bar
     ctx.strokeStyle = interpolateRgb(this.lastColor, this.nextColor)(this.sync.bar.progress)
     sin(ctx, now / 50, height / 2, this.sync.volume * 50, 100)
     ctx.stroke()

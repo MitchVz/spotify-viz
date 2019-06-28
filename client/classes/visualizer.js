@@ -31,7 +31,7 @@ export default class Visualizer {
   }
 
   /**
-   * @method hooks - Attach hooks to interval change events. 
+   * @method hooks - Attach hooks to interval change events.
    */
   hooks () {
 

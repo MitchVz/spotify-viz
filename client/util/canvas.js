@@ -36,7 +36,7 @@ export function star (points, innerRadius, outerRadius, cx = 0, cy = 0, rotation
   const outer = polygon(points, outerRadius, cx, cy, rotation)
   const inner = polygon(points, innerRadius, cx, cy, (360 / points / 2) + rotation)
   const vertices = []
-  
+
   for (var i = 0; i < points; i++) {
     vertices.push({ x: outer[i].x, y: outer[i].y })
     vertices.push({ x: inner[i].x, y: inner[i].y })
@@ -67,14 +67,23 @@ export function drawShape (ctx, vertices) {
 }
 
 export function sin (ctx, xOffset, yOffset, amplitude, frequency, tick = 5) {
+  const rot = 0
   const y = x => (amplitude * Math.sin((x / frequency) + xOffset) + yOffset)
-  const { width } = ctx.canvas 
+
+  const { width } = ctx.canvas
   ctx.beginPath()
   for (var x = -50; x < width + 50; x += tick) {
+    const [x1, y1] = rotatePoint(x, y(x), rot)
     if (x === -50) {
-      ctx.moveTo(x, y(x))
+      ctx.moveTo(x1, y1)
     } else {
-      ctx.lineTo(x, y(x))
+      ctx.lineTo(x1, y1)
     }
   }
+}
+
+function rotatePoint(x, y, rotation) {
+  const xPrime = (x * Math.cos(rotation)) - (y * Math.sin(rotation))
+  const yPrime = (x * Math.sin(rotation)) + (y * Math.cos(rotation))
+  return [xPrime, yPrime]
 }
