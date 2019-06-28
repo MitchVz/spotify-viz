@@ -1,5 +1,3 @@
-require('dotenv').config()
-
 const path = require('path')
 const merge = require('webpack-merge')
 const common = require('./common.js')
