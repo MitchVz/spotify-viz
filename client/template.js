@@ -10,6 +10,10 @@ export default class Template extends Visualizer {
     this.theme = ['#D63230', '#F39237', '#40BCD8', '#39A9DB', '#1C77C3'] // pride template
     this.timbreArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     this.pitchArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    window.addEventListener('keyup', event => {
+      this.handleKeyPress(event)
+    })
   }
 
   hooks () {
@@ -115,5 +119,46 @@ export default class Template extends Visualizer {
     // this.pitchArray.forEach((pitchValue, i) => {
     //   ctx.fillRect(rectWidth * i, height, rectWidth, -(pitchValue * height))
     // })
+  }
+
+
+
+  handleKeyPress(event) {
+    console.log(event.keyCode)
+    switch (event.keyCode) {
+      case 70: // f
+        console.log("fullscreen")
+        this.openFullscreen()
+        break
+      default:
+        break
+    }
+  }
+
+  /* View in fullscreen */
+  openFullscreen() {
+    let elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.mozRequestFullScreen) { /* Firefox */
+      elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+      elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) { /* IE/Edge */
+      elem.msRequestFullscreen();
+    }
+  }
+
+  /* Close fullscreen */
+  closeFullscreen() {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.mozCancelFullScreen) { /* Firefox */
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) { /* IE/Edge */
+      document.msExitFullscreen();
+    }
   }
 }
