@@ -6,8 +6,6 @@ import * as d3 from 'd3'
 
 export default class Template extends Visualizer {
 
-
-
   constructor () {
     super({ volumeSmoothing: 20 })
 
@@ -32,15 +30,21 @@ export default class Template extends Visualizer {
     this.timbreArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     this.pitchArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
+    // show toggles
+    this.showSine = true
+    this.showCircles = true
+    this.showBeats = true
+
+    this.ctx = this.sketch.ctx
+    this.width = this.sketch.width
+    this.height = this.sketch.height
+
     window.addEventListener('keyup', event => {
       this.handleKeyPress(event)
     })
   }
 
   hooks () {
-    const ctx = this.sketch.ctx
-    const width = this.sketch.width
-    const height = this.sketch.height
 
     this.sync.on('tatum', tatum => {
       // ctx.fillStyle = 'rgba(0, 0, 0, .2)'
@@ -48,27 +52,33 @@ export default class Template extends Visualizer {
     })
 
     this.sync.on('segment', segment => {
-      this.timbreArray = interpolateArray(this.timbreArray, segment.timbre)(.5)
-      this.pitchArray = interpolateArray(this.pitchArray, segment.pitches)(.5)
+      // this.timbreArray = interpolateArray(this.timbreArray, segment.timbre)(.5)
+      // this.pitchArray = interpolateArray(this.pitchArray, segment.pitches)(.5)
     })
 
     this.sync.on('beat', beat => {
-      const bar = interpolateBasis([0, this.sync.volume * 10, 0])(this.sync.bar.progress)
+      let ctx = this.ctx
+      let height = this.height
+      let width = this.width
 
-      let lineWidth = bar * 20 + 30
-      ctx.lineWidth = lineWidth
-      ctx.strokeStyle = this.lastColor
-      ctx.fillStyle = 'rgba(255, 255, 255, .4)'
-      ctx.beginPath()
-      ctx.lineWidth = beat
+      if (this.showBeats) {
+        const bar = interpolateBasis([0, this.sync.volume * 10, 0])(this.sync.bar.progress)
 
-      let circle_radius = this.sync.volume * height / 10
-      if (circle_radius < 50) {
-        circle_radius = 0
+        let lineWidth = bar * 20 + 30
+        ctx.lineWidth = lineWidth
+        ctx.strokeStyle = this.lastColor
+        ctx.fillStyle = 'rgba(255, 255, 255, .4)'
+        ctx.beginPath()
+        ctx.lineWidth = beat
+
+        let circle_radius = this.sync.volume * height / 10
+        if (circle_radius < 20) {
+          circle_radius = 0
+        }
+        circle(ctx, width / 2, height / 2, circle_radius)
+        ctx.stroke()
+        ctx.fill()
       }
-      circle(ctx, width / 2, height / 2, circle_radius)
-      ctx.stroke()
-      ctx.fill()
     })
 
     this.sync.on('bar', bar => {
@@ -82,6 +92,8 @@ export default class Template extends Visualizer {
   }
 
   paint({ ctx, height, width, now }) {
+    this.height = height
+    this.width = width
     const bar = interpolateBasis([0, this.sync.volume * 10, 0])(this.sync.bar.progress)
     const beat = interpolateBasis([0, this.sync.volume * 300, 0])(this.sync.beat.progress)
 
@@ -89,46 +101,48 @@ export default class Template extends Visualizer {
     ctx.fillStyle = 'rgba(0, 0, 0, .08)'
     ctx.fillRect(0, 0, width, height)
 
+    if (this.showCircles) {
+      ctx.lineWidth = 2;
+      var x1 = width / 2,
+        y1 = height / 2,
+        x0 = x1,
+        y0 = y1,
+        i = 0,
+        r = (width / 3 - (this.sync.volume / 80 * width / 2)),
+        τ = 2 * Math.PI;
+      var z = d3.hsl(++i % 360, 1, .5).rgb(),
+        c = interpolateRgb(this.lastColor, this.nextColor)(this.sync.bar.progress),
+        x = x0 += (x1 - x0) * .1,
+        y = y0 += (y1 - y0) * .1;
 
-    ctx.lineWidth = 2;
-    var x1 = width / 2,
-      y1 = height / 2,
-      x0 = x1,
-      y0 = y1,
-      i = 0,
-      r = (width / 3 - (this.sync.volume / 80 * width / 2)),
-      τ = 2 * Math.PI;
-    var z = d3.hsl(++i % 360, 1, .5).rgb(),
-      c = interpolateRgb(this.lastColor, this.nextColor)(this.sync.bar.progress),
-      x = x0 += (x1 - x0) * .1,
-      y = y0 += (y1 - y0) * .1;
+      d3.select({}).transition()
+        .duration(4000)
+        .ease(Math.sqrt)
+        .tween("circle", function () {
+          return function (t) {
+            ctx.strokeStyle = c;
+            ctx.beginPath();
+            ctx.arc(x, y, r * t, 0, τ);
+            ctx.stroke();
+          };
+        });
+    }
 
-    d3.select({}).transition()
-      .duration(4000)
-      .ease(Math.sqrt)
-      .tween("circle", function () {
-        return function (t) {
-          ctx.strokeStyle = c;
-          ctx.beginPath();
-          ctx.arc(x, y, r * t, 0, τ);
-          ctx.stroke();
-        };
-      });
+    if (this.showSine) {
+      // Create a sine wave
+      ctx.lineWidth = bar
+      ctx.strokeStyle = interpolateRgb(this.lastColor, this.nextColor)(this.sync.bar.progress)
+      sin(ctx, now / 50, height / 2, this.sync.volume * 100, 100)
+      ctx.stroke()
 
-
-    // Create a sine wave
-    ctx.lineWidth = bar
-    ctx.strokeStyle = interpolateRgb(this.lastColor, this.nextColor)(this.sync.bar.progress)
-    sin(ctx, now / 50, height / 2, this.sync.volume * 100, 100)
-    ctx.stroke()
-
-    // Create a circle in the center
-    ctx.fillStyle = 'rgba(0, 0, 0, 1)'
-    ctx.beginPath()
-    ctx.lineWidth = beat
-    circle(ctx, width / 2, height / 2, this.sync.volume * height / 30 + beat / 10)
-    ctx.stroke()
-    ctx.fill()
+      // Create a circle in the center
+      ctx.fillStyle = 'rgba(0, 0, 0, 1)'
+      ctx.beginPath()
+      ctx.lineWidth = beat
+      // circle(ctx, width / 2, height / 2, this.sync.volume * height / 30 + beat / 10)
+      ctx.stroke()
+      ctx.fill()
+    }
 
     // ctx.fillStyle = 'rgba(255, 255, 255, 1)'
     // const rectWidth = width / this.timbreArray.length
@@ -151,11 +165,20 @@ export default class Template extends Visualizer {
         console.log("fullscreen")
         this.openFullscreen()
         break
-      case 37:
+      case 37: // left arrow
         this.changeTheme(-1)
         break
-      case 39:
+      case 39: // right arrow
         this.changeTheme(1)
+        break
+      case 83: // s
+        this.toggleSine()
+        break
+      case 67: // c
+        this.toggleCircles()
+        break
+      case 66: // b
+        this.toggleBeat()
         break
       default:
         break
@@ -199,5 +222,17 @@ export default class Template extends Visualizer {
 
     console.log(`new theme: ${this.themeIndex}`)
     this.theme = this.allThemes[this.themeIndex]
+  }
+
+  toggleBeat() {
+    this.showBeats = !this.showBeats
+  }
+
+  toggleCircles() {
+    this.showCircles = !this.showCircles
+  }
+
+  toggleSine() {
+    this.showSine = !this.showSine
   }
 }
